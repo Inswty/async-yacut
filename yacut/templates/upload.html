@@ -13,7 +13,8 @@
             <div class="col-sm">
             </div>
             <div class="col-sm">
-              <form>
+              <form method="POST" novalidate enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
                 <div>
                   <div>
                     {{ form.files(class="form-control form-control-lg py-2 mb-3")}}
@@ -24,12 +25,6 @@
                         {% endfor %}
                         </p>
                     {% endif %}
-                    <p><span style="color:red">Текст возможной ошибки</span></p>
-                  </div>
-                  <div>
-                    <input type="url" class="form-control form-control-lg py-2 mb-3" id="form-link" name=""
-                      placeholder="Ваш вариант короткой ссылки">
-                    <p><span style="color:red">Текст возможной ошибки</span></p>
                   </div>
                   <input type="submit" class="btn btn-primary" value="Загрузить">
                 </div>
@@ -39,21 +34,19 @@
             </div>
           </div>
         </div>
-  
-        <div class="container">
-          <div class="row ">
-            <div class="col-sm">
-            </div>
-            <div class="col-sm">
-              <p class="text-center">
-              <h5 class="text-center">Пример информационного сообщения</h5>
-              </p>
-            </div>
-            <div class="col-sm">
-            </div>
-          </div>
-        </div>
-  
+        
+        <div class="container my-4" style="max-width:700px;">
+          {% for file in files %}
+              <div style="display:flex; border-bottom:1px solid #ccc; padding:4px 0; align-items: center;">
+                  <div style="width:300px; word-wrap: break-word; padding-right: 10px;">{{ file.filename }}</div>
+                  <div style="flex:1; min-width: 0; margin-left: 20px;">
+                      <a href="{{ url_for('follow_link', short=file.short, _external=True) }}" style="word-wrap: break-word; display: inline-block;">
+                          {{ url_for('follow_link', short=file.short, _external=True) }}
+                      </a>
+                  </div>
+              </div>
+          {% endfor %}
+      </div>
       </section>
 </main>
 {% endblock %}

@@ -1,9 +1,10 @@
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileRequired, FileAllowed, MultipleFileField
+from flask_wtf.file import FileRequired, MultipleFileField
 from wtforms import StringField, URLField
 from wtforms.validators import DataRequired, Length, Optional, Regexp
 
-from .constants import MAX_ORIGINAL_LINK_LENGTH, MAX_SHORT_LINK_LENGTH
+from .constants import (MAX_ORIGINAL_LINK_LENGTH, MAX_SHORT_LINK_LENGTH,
+                        SHORT_LINK_REGEX)
 
 
 class LinkForm(FlaskForm):
@@ -16,7 +17,8 @@ class LinkForm(FlaskForm):
         'Ваш вариант короткого идентификатора',
         validators=[
             Length(1, MAX_SHORT_LINK_LENGTH), Optional(),
-            Regexp(r'^[a-zA-Z0-9]+$', message="Можно только латинские буквы и цифры")
+            Regexp(SHORT_LINK_REGEX,
+                   message='Можно только латинские буквы и цифры')
         ]
     )
 
@@ -25,6 +27,6 @@ class UploadFileForm(FlaskForm):
     files = MultipleFileField(
         'Выберите файлы',
         validators=[
-            FileRequired(message="Файл обязателен для загрузки")
+            FileRequired(message='Файл обязателен для загрузки')
         ]
     )

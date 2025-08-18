@@ -10,12 +10,3 @@ class URLMap(db.Model):
     short = db.Column(db.String(MAX_SHORT_LINK_LENGTH),
                       unique=True, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def to_dict(self):
-        """Сериализация объекта в словарь для API."""
-        return {
-            'id': self.id,
-            'original': self.original,
-            'short': self.short,
-            'timestamp': self.timestamp.isoformat()
-        }
