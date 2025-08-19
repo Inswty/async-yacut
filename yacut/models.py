@@ -26,7 +26,7 @@ class URLMap(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     @classmethod
-    def validate_for_web(cls, short: str | None):
+    def validate_for_web(cls, short):
         if short and not cls.validate_short(short):
             if short in FORBIDDEN_SHORT_IDS:
                 raise WebAppError(MSG_SHORT_EXISTS)
