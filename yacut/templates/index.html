@@ -1,7 +1,7 @@
 {% extends "base.html" %} 
 {% block title %}YaCut - укоротитель ссылок{% endblock %} 
 {% block content %}
-<main>
+  <main>
     <section class="container my-5 px-4">
       <h1 class="text-center"><span style="color:red">Ya</span>Cut</h1>
       <p class="text-center my-4">
@@ -13,7 +13,6 @@
           <div class="col-sm"></div>
           <div class="col-sm">
 
-            <!-- Исправляем форму -->
             <form method="post">
               {{ form.hidden_tag() }}
 
@@ -48,20 +47,18 @@
       </div>
 
       {% if short_link %}
-      <div class="container">
-        <div class="row">
-          <div class="col-sm"></div>
-          <div class="col-sm">
-            <h5 class="text-center">
-              Ваша новая ссылка готова: 
-              <a href="{{ url_for('index_view', _external=True) }}{{ short_link }}">
-                {{ url_for('index_view', _external=True) }}{{ short_link }}
-              </a>
-            </h5>
+        <div class="container">
+          <div class="row">
+            <div class="col-sm"></div>
+            <div class="col-sm">
+              <h5 class="text-center">
+                Ваша новая ссылка готова: 
+                <a href="{{ short_link }}">{{ short_link }}</a>
+              </h5>
+            </div>
+            <div class="col-sm"></div>
           </div>
-          <div class="col-sm"></div>
         </div>
-      </div>
       {% endif %}
 
     </section>

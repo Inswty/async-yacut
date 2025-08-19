@@ -1,46 +1,35 @@
-from flask import abort, flash, redirect, render_template
+from flask import abort, redirect, render_template, url_for
+from http import HTTPStatus
 
-
-from . import app, db
+from . import app
 from .forms import LinkForm, UploadFileForm
 from .models import URLMap
-from .services import get_unique_short_id
 from .yandex_disk import async_upload_files_to_yandex_disk
+
+MSG_ID_NOT_FOUND = 'Указанный id не найден'
 
 
 @app.route('/', methods=('GET', 'POST'))
 def index_view():
     form = LinkForm()
-    if form.validate_on_submit():
-        if form.custom_id.data:
-            short_link = form.custom_id.data
-            if (
-                URLMap.query.filter_by(short=short_link).first() or
-                short_link == 'files'
-            ):
-                flash('Предложенный вариант короткой ссылки уже существует.',
-                      'error')
-                return render_template('main.html', form=form)
-        else:
-            while True:
-                short_link = get_unique_short_id()
-                if not URLMap.query.filter_by(short=short_link).first():
-                    break
-        urlmap = URLMap(
-            original=form.original_link.data,
-            short=short_link
-        )
-        db.session.add(urlmap)
-        db.session.commit()
-        return render_template('main.html', form=form, short_link=short_link)
-    return render_template('main.html', form=form)
+    if not form.validate_on_submit():
+        return render_template('index.html', form=form)
+    URLMap.validate_for_web(form.custom_id.data)
+    urlmap = URLMap.create_new(
+        url=form.original_link.data,
+        short=form.custom_id.data
+    )
+    return render_template(
+        'index.html', form=form,
+        short_link=url_for('follow_link', short=urlmap.short, _external=True)
+    )
 
 
 @app.route('/<string:short>')
 def follow_link(short):
-    urlmap = URLMap.query.filter_by(short=short).first()
-    if urlmap is None:
-        abort(404)
+    urlmap = URLMap.get_by_short(short)
+    if not urlmap:
+        abort(HTTPStatus.NOT_FOUND, description=MSG_ID_NOT_FOUND)
     return redirect(urlmap.original)
 
 
@@ -48,22 +37,13 @@ def follow_link(short):
 async def upload_view():
     form = UploadFileForm()
     uploaded_files = []
-    if form.validate_on_submit():
-        urls = await async_upload_files_to_yandex_disk(form.files.data)
-        for file, url in urls.items():
-            # генерируем уникальный short
-            while True:
-                short_link = get_unique_short_id()
-                if not URLMap.query.filter_by(short=short_link).first():
-                    break
-            urlmap = URLMap(
-                original=url,
-                short=short_link
-            )
-            db.session.add(urlmap)
-            uploaded_files.append({
-                'filename': file,
-                'short': short_link
-            })
-        db.session.commit()
+    if not form.validate_on_submit():
+        return render_template('upload.html', form=form, files=uploaded_files)
+    urls = await async_upload_files_to_yandex_disk(form.files.data)
+    for file, url in urls.items():
+        urlmap = URLMap.create_new(url)
+        uploaded_files.append({
+            'filename': file,
+            'short': urlmap.short
+        })
     return render_template('upload.html', form=form, files=uploaded_files)

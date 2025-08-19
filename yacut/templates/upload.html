@@ -1,52 +1,50 @@
 {% extends "base.html" %} 
 {% block title %}YaCut - Загрузка файлов{%endblock %} 
 {% block content %}
-<main>
+  <main>
     <section class="container my-5 px-4">
-        <h1 class="text-center"><span style="color:red">Ya</span>Cut</h1>
-        <p class="text-center my-4">
-          Загрузите файлы и получите на них короткие ссылки
-        </p>
-  
-        <div class="container">
-          <div class="row my-3">
-            <div class="col-sm">
-            </div>
-            <div class="col-sm">
-              <form method="POST" novalidate enctype="multipart/form-data">
-                {{ form.hidden_tag() }}
+      <h1 class="text-center"><span style="color:red">Ya</span>Cut</h1>
+      <p class="text-center my-4">
+        Загрузите файлы и получите на них короткие ссылки
+      </p>
+
+      <div class="container">
+        <div class="row my-3">
+          <div class="col-sm">
+          </div>
+          <div class="col-sm">
+            <form method="POST" novalidate enctype="multipart/form-data">
+              {{ form.hidden_tag() }}
+              <div>
                 <div>
-                  <div>
-                    {{ form.files(class="form-control form-control-lg py-2 mb-3")}}
-                    {% if form.files.errors %}
-                        <p class="text-danger">
-                        {% for error in form.files.errors %}
-                        {{ error }}
-                        {% endfor %}
-                        </p>
-                    {% endif %}
-                  </div>
-                  <input type="submit" class="btn btn-primary" value="Загрузить">
+                  {{ form.files(class="form-control form-control-lg py-2 mb-3")}}
+                  <p class="text-danger">
+                    {% for error in form.files.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </p>
                 </div>
-              </form>
-            </div>
-            <div class="col-sm">
-            </div>
+                <input type="submit" class="btn btn-primary" value="Загрузить">
+              </div>
+            </form>
+          </div>
+          <div class="col-sm">
           </div>
         </div>
-        
-        <div class="container my-4" style="max-width:700px;">
-          {% for file in files %}
-              <div style="display:flex; border-bottom:1px solid #ccc; padding:4px 0; align-items: center;">
-                  <div style="width:300px; word-wrap: break-word; padding-right: 10px;">{{ file.filename }}</div>
-                  <div style="flex:1; min-width: 0; margin-left: 20px;">
-                      <a href="{{ url_for('follow_link', short=file.short, _external=True) }}" style="word-wrap: break-word; display: inline-block;">
-                          {{ url_for('follow_link', short=file.short, _external=True) }}
-                      </a>
-                  </div>
-              </div>
-          {% endfor %}
       </div>
-      </section>
-</main>
+      
+      <div class="container my-4" style="max-width:700px;">
+        {% for file in files %}
+          <div style="display:flex; border-bottom:1px solid #ccc; padding:4px 0; align-items: center;">
+            <div style="width:300px; word-wrap: break-word; padding-right: 10px;">{{ file.filename }}</div>
+            <div style="flex:1; min-width: 0; margin-left: 20px;">
+              <a href="{{ url_for('follow_link', short=file.short, _external=True) }}" style="word-wrap: break-word; display: inline-block;">
+                {{ url_for('follow_link', short=file.short, _external=True) }}
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
 {% endblock %}
