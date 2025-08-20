@@ -1,8 +1,12 @@
+import re
 import string
 
+DEFAULT_SHORT_LENGTH = 6
+FORBIDDEN_SHORT = ('files',)
+MAX_GENERATION_ATTEMPTS = 100
 MAX_ORIGINAL_LINK_LENGTH = 2048
 MAX_SHORT_LENGTH = 16
-DEFAULT_SHORT_LENGTH = 6
 SHORT_CHARS = string.ascii_letters + string.digits
-MAX_GENERATION_ATTEMPTS = 100
-FORBIDDEN_SHORT_IDS = ('files', 'api')
+SHORT_REGEX = (
+    re.compile(f'^[{re.escape(SHORT_CHARS)}]+$')
+)

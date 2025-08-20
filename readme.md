@@ -8,14 +8,10 @@ YaCut — это сервис для сокращения длинных URL и 
 Клонировать репозиторий и перейти в него в командной строке:
 
 ```
-git clone 
-https://github.com/Inswty/async-yacut.git
-```
-
-```
+git clone git@github.com:Inswty/async-yacut.git
 cd yacut
-```
 
+```
 Cоздать и активировать виртуальное окружение:
 
 ```
@@ -67,14 +63,15 @@ flask run
 
 ```
 Приложение доступно по адресу:  
-http://127.0.0.1:5000/
+[http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+
 
 ```
 
 ```
 Примеры запросов к API, варианты ответов и ошибок приведены в спецификации openapi.yml;
-Для работы с документом воспользуйтесь онлайн-редактором Swagger Editor.
-https://editor.swagger.io/
+Для работы с документом перейдите по адресу:
+[Swagger API Docs](http://localhost:5000/docs/)
 
 ```
 
@@ -91,5 +88,5 @@ https://editor.swagger.io/
 ```
 
 Автор:
-Проект разработан [Павел Куличенко]
-GitHub: https://github.com/Inswty
+Проект разработан 
+[Павел Куличенко](https://github.com/Inswty)

@@ -1,21 +1,23 @@
 import random
+from http import HTTPStatus
 from datetime import datetime
+from urllib.parse import urlparse
 
+from flask import url_for
+
+from settings import REDIRECT_LINK_ENDPOINT
 from . import db
-from .error_handlers import InvalidAPIUsage, WebAppError
 from .constants import (
-    DEFAULT_SHORT_LENGTH, FORBIDDEN_SHORT_IDS, MAX_GENERATION_ATTEMPTS,
-    MAX_ORIGINAL_LINK_LENGTH, MAX_SHORT_LENGTH, SHORT_CHARS
+    DEFAULT_SHORT_LENGTH, FORBIDDEN_SHORT, MAX_GENERATION_ATTEMPTS,
+    MAX_ORIGINAL_LINK_LENGTH, MAX_SHORT_LENGTH, SHORT_CHARS, SHORT_REGEX
 )
 
-from .constants import DEFAULT_SHORT_LENGTH
-
-
-MSG_INVALID_SHORT = 'Указано недопустимое имя для короткой ссылки'
-MSG_NO_BODY = 'Отсутствует тело запроса'
-MSG_NO_URL = '\"url\" является обязательным полем!'
-MSG_SHORT_EXISTS = 'Предложенный вариант короткой ссылки уже существует.'
-MSG_SHOT_NOT_GEN = 'Не удалось сгенерировать уникальную короткую ссылку'
+INVALID_SHORT = 'Указано недопустимое имя для короткой ссылки'
+INVALID_URL = 'Некорректный URL'
+NO_BODY = 'Отсутствует тело запроса'
+NO_URL = '"url" является обязательным полем!'
+SHORT_EXISTS = 'Предложенный вариант короткой ссылки уже существует.'
+SHORT_NOT_GEN = 'Не удалось сгенерировать уникальную короткую ссылку'
 
 
 class URLMap(db.Model):
@@ -25,39 +27,80 @@ class URLMap(db.Model):
                       unique=True, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    @classmethod
-    def validate_for_web(cls, short):
-        if short and not cls.validate_short(short):
-            if short in FORBIDDEN_SHORT_IDS:
-                raise WebAppError(MSG_SHORT_EXISTS)
-            raise WebAppError(MSG_INVALID_SHORT)
-        if short and cls.query.filter_by(short=short).first():
-            raise WebAppError(MSG_SHORT_EXISTS)
+    class WebAppError(Exception):
+        """Общее исключение для ошибок пользовательского интерфейса."""
+
+        pass
+
+    class InvalidAPIUsage(Exception):
+        """Общее исключение для ошибок API."""
+
+        status_code = HTTPStatus.BAD_REQUEST
+
+        def __init__(self, message, status_code=None):
+            super().__init__()
+            self.message = message
+            if status_code is not None:
+                self.status_code = status_code
+
+        def to_dict(self):
+            return dict(message=self.message)
+
+    @staticmethod
+    def is_valid_url(url):
+        """Проверяет, что URL корректный, содержит http/https и домен."""
+        try:
+            result = urlparse(url)
+            return all([result.scheme in ('http', 'https'), result.netloc])
+        except Exception:
+            return False
 
     @classmethod
-    def validate_for_api(cls, data):
-        """Валидация для API."""
-        if not data:
-            raise InvalidAPIUsage(MSG_NO_BODY)
-        if 'url' not in data:
-            raise InvalidAPIUsage(MSG_NO_URL)
-        short = data.get('custom_id')
-        if short and not cls.validate_short(short):
-            raise InvalidAPIUsage(MSG_INVALID_SHORT)
-        if short and cls.query.filter_by(short=short).first():
-            raise InvalidAPIUsage(MSG_SHORT_EXISTS)
-
-    @classmethod
-    def create_new(cls, url: str, short: str = None):
+    def create(cls, url, short=None, is_api=False):
+        if not cls.is_valid_url(url):
+            if is_api:
+                raise cls.InvalidAPIUsage(
+                    INVALID_URL,
+                    status_code=HTTPStatus.BAD_REQUEST
+                )
+            else:
+                raise cls.WebAppError(INVALID_URL)
+        if short and not (
+            SHORT_REGEX.fullmatch(short) is not None
+            and len(short) <= MAX_SHORT_LENGTH
+        ):
+            if is_api:
+                raise cls.InvalidAPIUsage(
+                    INVALID_SHORT,
+                    status_code=HTTPStatus.BAD_REQUEST
+                )
+            else:
+                raise cls.WebAppError(INVALID_SHORT)
+        if short in FORBIDDEN_SHORT:
+            if is_api:
+                raise cls.InvalidAPIUsage(
+                    SHORT_EXISTS,
+                    status_code=HTTPStatus.BAD_REQUEST
+                )
+            else:
+                raise cls.WebAppError(SHORT_EXISTS)
+        if short and cls.get(short) is not None:
+            if is_api:
+                raise cls.InvalidAPIUsage(
+                    SHORT_EXISTS,
+                    status_code=HTTPStatus.BAD_REQUEST
+                )
+            else:
+                raise cls.WebAppError(SHORT_EXISTS)
         if not short:
             short = cls.get_unique_short()
-        urlmap = URLMap(original=url, short=short)
-        db.session.add(urlmap)
+        url_map = URLMap(original=url, short=short)
+        db.session.add(url_map)
         db.session.commit()
-        return urlmap
+        return url_map
 
     @classmethod
-    def get_by_short(cls, short):
+    def get(cls, short):
         return cls.query.filter_by(short=short).first()
 
     @classmethod
@@ -68,15 +111,12 @@ class URLMap(db.Model):
                     SHORT_CHARS, k=DEFAULT_SHORT_LENGTH
                 )
             )
-            if not cls.query.filter_by(short=short).first():
+            if not cls.get(short) is not None:
                 return short
-        raise RuntimeError(MSG_SHOT_NOT_GEN)
+        raise RuntimeError(SHORT_NOT_GEN)
 
-    @classmethod
-    def validate_short(cls, short):
-        return (
-            isinstance(short, str)
-            and len(short) <= MAX_SHORT_LENGTH
-            and all(c in SHORT_CHARS for c in short)
-            and short not in FORBIDDEN_SHORT_IDS
+    def get_short_link(self):
+        return url_for(
+            REDIRECT_LINK_ENDPOINT,
+            short=self.short, _external=True
         )
