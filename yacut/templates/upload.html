@@ -38,8 +38,8 @@
           <div style="display:flex; border-bottom:1px solid #ccc; padding:4px 0; align-items: center;">
             <div style="width:300px; word-wrap: break-word; padding-right: 10px;">{{ file.filename }}</div>
             <div style="flex:1; min-width: 0; margin-left: 20px;">
-              <a href="{{ url_for('redirect_view', short=file.short, _external=True) }}" style="word-wrap: break-word; display: inline-block;">
-                {{ url_for('redirect_view', short=file.short, _external=True) }}
+              <a href="{{ file.short_link }}" style="word-wrap: break-word; display: inline-block;">
+                {{ file.short_link }}
               </a>
             </div>
           </div>

@@ -3,6 +3,7 @@ from http import HTTPStatus
 from flask import jsonify, request
 
 from . import app
+from .error_handlers import InvalidAPIUsage
 from .models import URLMap
 
 REQUEST_NO_BODY = 'Отсутствует тело запроса'
@@ -11,36 +12,36 @@ URL_REQUIRED = '"url" является обязательным полем!'
 
 
 @app.route('/api/id/', methods=('POST',))
-def create_short_link():
+def add_url_mapping():
     data = request.get_json(silent=True)
     if not data:
-        raise URLMap.InvalidAPIUsage(
+        raise InvalidAPIUsage(
             REQUEST_NO_BODY, status_code=HTTPStatus.BAD_REQUEST
         )
+    if 'url' not in data:
+        raise InvalidAPIUsage(
+            URL_REQUIRED, status_code=HTTPStatus.BAD_REQUEST
+        )
     try:
-        url_map = URLMap.create(
-            data['url'],
-            data.get('custom_id'),
-            is_api=True
+        return (
+            jsonify({
+                'url': data['url'],
+                'short_link': URLMap.create(
+                    data['url'],
+                    data.get('custom_id'),
+                ).get_short_link(),
+            }),
+            HTTPStatus.CREATED
         )
-    except KeyError:
-        raise URLMap.InvalidAPIUsage(
-            URL_REQUIRED,
-            status_code=HTTPStatus.BAD_REQUEST
-        )
-    return (
-        jsonify({
-            'url': url_map.original,
-            'short_link': url_map.get_short_link(),
-        }), HTTPStatus.CREATED
-    )
+    except ValueError as e:
+        raise InvalidAPIUsage(str(e))
 
 
 @app.route('/api/id/<short>/', methods=('GET',))
 def get_original_url(short):
     url_map = URLMap.get(short)
     if not url_map:
-        raise URLMap.InvalidAPIUsage(
+        raise InvalidAPIUsage(
             SHORT_NOT_FOUND, status_code=HTTPStatus.NOT_FOUND
         )
     return jsonify({
