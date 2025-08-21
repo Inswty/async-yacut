@@ -3,7 +3,6 @@ from http import HTTPStatus
 from flask import abort, flash, redirect, render_template
 
 from . import app
-from .error_handlers import InvalidAPIUsage
 from .forms import LinkForm, UploadFileForm
 from .models import URLMap
 from .yandex_disk import async_upload_files_to_yandex_disk
@@ -25,8 +24,8 @@ def index_view():
                 form.custom_id.data
             ).get_short_link()
         ), HTTPStatus.OK
-    except ValueError as e:
-        flash(str(e), "error")
+    except (ValueError, RuntimeError) as e:
+        flash(str(e), 'error')
     return render_template('index.html', form=form)
 
 
@@ -50,15 +49,15 @@ async def upload_view():
             'upload.html',
             form=form,
             files=[
-                {
-                    'filename': file,
-                    'short_link': (
-                        URLMap.create(url, from_form=True).get_short_link()
-                    )
-                }
+                dict(
+                    filename=file,
+                    short_link=URLMap.create(
+                        url, validate_input=True
+                    ).get_short_link()
+                )
                 for file, url in urls.items()
             ]
         )
-    except InvalidAPIUsage as e:
+    except (ValueError, RuntimeError) as e:
         flash(str(e), 'error')
         return render_template('upload.html', form=form)

@@ -16,11 +16,11 @@ def add_url_mapping():
     data = request.get_json(silent=True)
     if not data:
         raise InvalidAPIUsage(
-            REQUEST_NO_BODY, status_code=HTTPStatus.BAD_REQUEST
+            REQUEST_NO_BODY
         )
     if 'url' not in data:
         raise InvalidAPIUsage(
-            URL_REQUIRED, status_code=HTTPStatus.BAD_REQUEST
+            URL_REQUIRED
         )
     try:
         return (
@@ -33,7 +33,7 @@ def add_url_mapping():
             }),
             HTTPStatus.CREATED
         )
-    except ValueError as e:
+    except (ValueError, RuntimeError) as e:
         raise InvalidAPIUsage(str(e))
 
 

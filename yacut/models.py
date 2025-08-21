@@ -26,12 +26,12 @@ class URLMap(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     @staticmethod
-    def create(url, short=None, from_form=False):
-        if not from_form:
+    def create(url, short=None, validate_input=False):
+        if not validate_input:
             if len(url) > MAX_ORIGINAL_LINK_LENGTH:
                 raise ValueError(INVALID_URL)
         if short:
-            if not from_form:
+            if not validate_input:
                 if (
                     len(short) > MAX_SHORT_LENGTH
                     or not SHORT_REGEX.fullmatch(short)
