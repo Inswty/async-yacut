@@ -52,7 +52,7 @@ async def upload_view():
                 dict(
                     filename=file,
                     short_link=URLMap.create(
-                        url, validate_input=True
+                        url, skip_validation=True
                     ).get_short_link()
                 )
                 for file, url in urls.items()
