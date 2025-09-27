@@ -1,7 +1,19 @@
-# YaCut — сервис сокращения ссылок
+## YaCut — сервис сокращения ссылок
 
 YaCut — это сервис для сокращения длинных URL и хранения их в базе данных.  
-Приложение позволяет создавать короткие ссылки, а также загружать файлы и получать для них короткие адреса.
+Приложение позволяет создавать короткие ссылки, а также асинхронно загружать файлы и получать для них короткие адреса.
+
+### Технологический стек:
+- Python 3.12
+- Flask
+- Flask-WTF
+- SQLAlchemy
+- SQLite
+- HTML
+- CSS
+- Jinja2
+- Bootstrap
+- Swagger
 
 ### Как запустить проект Yacut:
 
@@ -15,7 +27,7 @@ cd yacut
 Cоздать и активировать виртуальное окружение:
 
 ```
-python3 -m venv venv
+python -m venv venv
 ```
 
 * Если у вас Linux/macOS
@@ -27,14 +39,10 @@ python3 -m venv venv
 * Если у вас windows
 
     ```
-    source venv/scripts/activate
+    source venv/Scripts/activate
     ```
 
 Установить зависимости из файла requirements.txt:
-
-```
-python3 -m pip install --upgrade pip
-```
 
 ```
 pip install -r requirements.txt
@@ -61,32 +69,16 @@ flask db upgrade
 flask run
 ```
 
-```
 Приложение доступно по адресу:  
 [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
 
 
-```
+Примеры запросов к API, варианты ответов и ошибок приведены в спецификации openapi.yml  
+Для работы с документом перейдите по адресу:  
+[http://localhost:5000/docs/](http://localhost:5000/docs/)
 
-```
-Примеры запросов к API, варианты ответов и ошибок приведены в спецификации openapi.yml;
-Для работы с документом перейдите по адресу:
-[Swagger API Docs](http://localhost:5000/docs/)
 
-```
 
-```
-Технологический стек:
-- Python 3.12 + Flask
-- Flask-WTF
-- SQLAlchemy
-- HTML
-- CSS
-- SQLite
-- Jinja2
-- Bootstrap
-```
-
-Автор:
+## Автор:
 Проект разработан 
 [Павел Куличенко](https://github.com/Inswty)
